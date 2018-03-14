@@ -14,7 +14,7 @@ data Expr a
       (Expr a)                        -- usually a package to pattern match
       [Alter a]                       -- alternative expr
   | ELam [a] (Expr a)                 -- lambda expressions [params] -> expr 
-  deriving Text                       
+  deriving Show
 
 
 type Program a   = [ScDefn a]
@@ -26,14 +26,15 @@ type CoreAlt     = Alter String
 type CoreExpr    = Expr String
 
 type IsRec = Bool
-recusive, nonRecursive :: IsRec  
+recursive    :: IsRec
+nonRecursive :: IsRec  
 recursive     = True                   
 nonRecursive  = False
 
-isAtomicExpr :: CoreAlt -> Bool
-isAtomicExpr Evar e = True
-isAtomicExpr ENum e = True
-isAtomicExpr _      = False
+isAtomicExpr :: CoreExpr -> Bool
+isAtomicExpr (Evar e) = True
+isAtomicExpr (ENum e) = True
+isAtomicExpr e        = False
 
 -- |Extracts binders and sub-exprs from list of definition expressions
 bindersOf :: [(a,b)] -> [a]
