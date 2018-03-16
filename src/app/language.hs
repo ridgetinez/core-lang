@@ -44,4 +44,3 @@ exprsOf :: [(a,b)] -> [b]
 exprsOf defns = [expr | (_, expr) <- defns]
 
 
-
