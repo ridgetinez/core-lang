@@ -4,14 +4,17 @@ module PrettyPrinter where
 import CorePrelude
 import Language
 
--- foldr :: (a -> b -> b) -> b -> [a] -> b
--- foldr _ fin []     = fin
--- foldr f fin (x:xs) = f fin (foldr f fin xs)
--- 
--- -- iteratively store result of first elements -> []
--- foldl :: (b -> a -> b) -> b -> [a] -> b
--- foldl _ fin []     = fin
--- foldl f fin (x:xs) = foldl f (f fin x) xs
+-- (++) works in O(l) l = length of first arg -> O(n^2) on n concatenations
+-- |ExpSeq implements concatenation in O(n) with definitions for keeping tab structure
+data ExpSeq = error "Not implemented yet!"
+
+expNil     :: ExpSeq                        -- Empty seq for equality
+strToExp   :: String -> ExpSeq              -- String rep to exp seq
+expAppend  :: ExpSeq -> ExpSeq -> ExpSeq    -- Append two expSeqs
+expNewline :: ExpSeq                        -- Newline with indentation
+expIndent  :: ExpSeq                        -- Pad left expSeqs with spaces
+expDisplay :: ExpSeq -> String              -- Convert expSeq back to String
+
 
 -- |Helpers for creating expressions in testA
 -- |Apply x n times on EAp. 
