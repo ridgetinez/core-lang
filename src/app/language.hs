@@ -1,6 +1,6 @@
 module Language where
 
--- language for the CORE expressions (can be evaluated) 
+-- language for the CORE expressions (can be evaluated)
 data Expr a
   = Evar String                       -- (terminal) variables
   | ENum Int                          -- (terminal) num values
@@ -13,9 +13,22 @@ data Expr a
   | ECase                             -- pattern-matching case
       (Expr a)                        -- usually a package to pattern match
       [Alter a]                       -- alternative expr
-  | ELam [a] (Expr a)                 -- lambda expressions [params] -> expr 
+  | ELam [a] (Expr a)                 -- lambda expressions [params] -> expr
   deriving Show
 
+{-
+-- what are the benefits of the above implementation and constructing types below?
+data Expr (a :: *)   -- need to import KINDSIGNATURES for this to work
+  = Evar :: String -> Expr String
+  = Enum :: Int    -> Expr Int
+  = EAp  :: Expr a -> Expr a -> Expr a  -- how does this work?
+
+-- singletons
+data SBool (b :: Bool) where
+    SFalse :: SBool False      -- if given this type, you know the value is False
+    STrue  :: SBool True       -- the type SBool True => True value _only_
+
+-}
 
 type Program a   = [ScDefn a]
 type CoreProgram = Program String
@@ -27,8 +40,8 @@ type CoreExpr    = Expr String
 
 type IsRec = Bool
 recursive    :: IsRec
-nonRecursive :: IsRec  
-recursive     = True                   
+nonRecursive :: IsRec
+recursive     = True
 nonRecursive  = False
 
 isAtomicExpr :: CoreExpr -> Bool
@@ -42,5 +55,3 @@ bindersOf defns = [symbol | (symbol, _) <- defns]
 
 exprsOf :: [(a,b)] -> [b]
 exprsOf defns = [expr | (_, expr) <- defns]
-
-
