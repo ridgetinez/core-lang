@@ -21,7 +21,7 @@ data ExpSeq =
 expNil     = ExpNil
 strToExp s = ExpStr s
 expIndent  = ExpIndent      -- not implemented
-expNewline = ExpNewline     -- not implemented
+expNewline = ExpStr "\n"     -- not implemented
 
 expAppend :: ExpSeq -> ExpSeq -> ExpSeq
 expAppend x y = ExpAppend x y
@@ -30,6 +30,7 @@ flatten :: [ExpSeq] -> String
 flatten []                   = ""
 flatten ((ExpNil):xs)        = flatten xs
 flatten ((ExpStr s):xs)      = s ++ flatten xs
+flatten ((ExpNewline):xs)    = "\n" ++ flatten xs
 flatten ((ExpAppend p q):xs) = flatten $ p : q : xs     --
 
 expDisplay :: ExpSeq -> String

@@ -32,8 +32,8 @@ pprScmb :: CoreScDefn -> ExpSeq
 pprScmb (id, args, e) = expConcat [strToExp id, strToExp " ", pprArgs args, strToExp " = ", pprExpr e]
 
 -- |Flatten all elements into a string with spaces between elements
-pprArgs :: Show a => [a] -> ExpSeq
-pprArgs xs = expInterleave (strToExp " ") $ map (\x -> strToExp $ show x) xs
+pprArgs :: [String] -> ExpSeq
+pprArgs xs = expInterleave (strToExp " ") $ map (\x -> strToExp x) xs
 
 -- |Handle pretty formatting of Core Expressions
 pprExpr :: CoreExpr -> ExpSeq
