@@ -31,7 +31,9 @@ flatten []                   = ""
 flatten ((ExpNil):xs)        = flatten xs
 flatten ((ExpStr s):xs)      = s ++ flatten xs
 flatten ((ExpNewline):xs)    = "\n" ++ flatten xs
+flatten ((ExpIndent):xs)     = "\t" ++ flatten xs
 flatten ((ExpAppend p q):xs) = flatten $ p : q : xs     --
+
 
 expDisplay :: ExpSeq -> String
 expDisplay e = flatten [e]

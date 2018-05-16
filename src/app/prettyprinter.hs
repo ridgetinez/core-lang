@@ -41,9 +41,9 @@ pprExpr (Evar v)  = strToExp v
 pprExpr (ENum n)  = strToExp (show n)
 pprExpr (EAp a b) = expConcat [(pprExpr a), strToExp " ", (pprAExpr b)]
 pprExpr (ELet isrec defns expr)
-  = expConcat [strToExp keyword, expNewline, strToExp " ",
-               expIndent, strToExp " ", pprDefns defns,
-               expNewline, strToExp "in", pprExpr expr, expNewline]
+  = expConcat [strToExp keyword, expNewline,
+               expIndent, pprDefns defns, expNewline,
+               strToExp "in ", pprExpr expr, expNewline]
     where
     keyword | not isrec = "let"
             | otherwise = "letrec"
@@ -64,10 +64,10 @@ pprAlt (tag, ids, e) = expConcat [strToExp "<", strToExp (show tag), strToExp ">
 pprDefns :: [(String, CoreExpr)] -> ExpSeq
 pprDefns defns = expInterleave sep (map pprDefn defns)
                  where
-                 sep = expConcat [strToExp ";", expNewline]
+                 sep = expConcat [strToExp ";", expNewline, expIndent]
 
 pprDefn :: (String, CoreExpr) -> ExpSeq
-pprDefn (id, e) = expConcat [strToExp id, strToExp " = ", expIndent, pprExpr e]
+pprDefn (id, e) = expConcat [strToExp id, strToExp " = ", pprExpr e]
 
 
 -- |Handle potential atomic expressions, reduce expr otherwise
