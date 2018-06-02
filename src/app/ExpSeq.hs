@@ -20,8 +20,8 @@ data ExpSeq =
 
 expNil     = ExpNil
 strToExp s = ExpStr s
-expIndent  = ExpIndent      -- not implemented
-expNewline = ExpStr "\n"     -- not implemented
+expIndent  = ExpIndent      
+expNewline = ExpStr "\n"   
 
 expAppend :: ExpSeq -> ExpSeq -> ExpSeq
 expAppend x y = ExpAppend x y
