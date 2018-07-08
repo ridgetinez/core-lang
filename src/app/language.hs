@@ -17,17 +17,12 @@ data Expr a
   deriving Show
 
 {-
--- what are the benefits of the above implementation and constructing types below?
+what are the benefits of the above implementation and constructing types below?
 data Expr (a :: *)   -- need to import KINDSIGNATURES for this to work
   = Evar :: String -> Expr String
   = Enum :: Int    -> Expr Int
-  = EAp  :: Expr a -> Expr a -> Expr a  -- how does this work?
-
--- singletons
-data SBool (b :: Bool) where
-    SFalse :: SBool False      -- if given this type, you know the value is False
-    STrue  :: SBool True       -- the type SBool True => True value _only_
-
+  = EAp  :: Expr a -> Expr a -> Expr a 
+GADT allows us to define postconditions on the type of our Expr constructors
 -}
 
 type Program a   = [ScDefn a]
