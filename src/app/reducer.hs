@@ -98,7 +98,45 @@ isDataNode (NNum _) = True
 isDataNode _        = False
 
 step :: TiState -> TiState
-step = undefined
+step state = case hLookup heap (head stack) of
+  Just n  -> dispatch n
+  Nothing -> error "Supercombinator not defined on the heap!"
+  where
+    (stack,dump,heap,globals,stats) = state
+    dispatch (NNum x)    = error "Number literal being applied as a function!"
+    dispatch (NAp a1 a2) = apStep state a1 a2
+    dispatch (NSComb n vs e) = scStep state n vs e
+
+apStep :: TiState -> Addr -> Addr -> TiState
+apStep (stack,dump,heap,global,stats) a1 a2 =
+  (a1:stack,dump,heap,global,stats)
+
+scStep :: TiState -> String -> [String] -> CoreExpr -> TiState
+scStep (stack,dump,heap,global,stats) name vars body = 
+  (newStack,dump,newHeap,global,stats)
+    where
+      newStack = initialisedAddress : (drop (length vars + 1) stack)
+      (newHeap,initialisedAddress) = instantiate body heap env
+      env = argBindings ++ global
+      argBindings = zip vars $ getScArgs stack heap
+
+-- precondition: NSComb address is at the top of the stack
+getScArgs :: TiStack -> TiHeap -> TiStack
+getScArgs (sc:stack) heap -- we want all the addresses of the arguments of our sc
+  = map go stack where go addr = arg where Just (NAp f arg) = hLookup heap addr
+
+instantiate :: CoreExpr -> TiHeap -> [(String,Addr)] -> (TiHeap,Addr)
+instantiate (ENum n) heap env = hAlloc heap (NNum n)
+instantiate (EAp e1 e2) heap env  = hAlloc heap2 (NAp a1 a2)
+  where
+    (heap1,a1) = instantiate e1 heap env
+    (heap2,a2) = instantiate e2 heap1 env  -- thread heap through sequentially!
+instantiate (Evar v) heap env = case lookup v env of
+  Just a -> (heap, a)  -- this address points to either a global, or one of the arguments applied to this function
+                       -- back in getScArgs, this is like pointer direction!
+  Nothing -> error "Local variable in function has no defined value!"
+
+
 
 doAdmin :: TiState -> TiState
 doAdmin (stack,dump,heap,global,stats) = (stack,dump,heap,global,tiStatIncSteps $ tiStatGetSteps stats)
