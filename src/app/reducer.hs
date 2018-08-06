@@ -4,6 +4,7 @@ import Language
 import Parser
 import MemHeap
 import CorePrelude
+import ExpSeq
 
 {-
   Execution ~ Evaluation of expressions, where we model expressions as graphs.
@@ -111,6 +112,7 @@ apStep :: TiState -> Addr -> Addr -> TiState
 apStep (stack,dump,heap,global,stats) a1 a2 =
   (a1:stack,dump,heap,global,stats)
 
+-- models the state transition rule for supercombinators
 scStep :: TiState -> String -> [String] -> CoreExpr -> TiState
 scStep (stack,dump,heap,global,stats) name vars body = 
   (newStack,dump,newHeap,global,stats)
@@ -120,17 +122,18 @@ scStep (stack,dump,heap,global,stats) name vars body =
       env = argBindings ++ global
       argBindings = zip vars $ getScArgs stack heap
 
--- precondition: NSComb address is at the top of the stack
+-- precondition: takes in a stack with a sc node on top of applications
 getScArgs :: TiStack -> TiHeap -> TiStack
-getScArgs (sc:stack) heap -- we want all the addresses of the arguments of our sc
+getScArgs (sc:stack) heap -- take the addresses of all the vars being applied to in application nodes in the stack
   = map go stack where go addr = arg where Just (NAp f arg) = hLookup heap addr
 
+-- given a core expression, the initial heap, and 
 instantiate :: CoreExpr -> TiHeap -> [(String,Addr)] -> (TiHeap,Addr)
 instantiate (ENum n) heap env = hAlloc heap (NNum n)
-instantiate (EAp e1 e2) heap env  = hAlloc heap2 (NAp a1 a2)
+instantiate (EAp e1 e2) heap env  = hAlloc heap2 (NAp a1 a2) -- build up a new template tree from app's
   where
     (heap1,a1) = instantiate e1 heap env
-    (heap2,a2) = instantiate e2 heap1 env  -- thread heap through sequentially!
+    (heap2,a2) = instantiate e2 heap1 env  -- thread heap through sequentially, this looks like something we can do with do-notation
 instantiate (Evar v) heap env = case lookup v env of
   Just a -> (heap, a)  -- this address points to either a global, or one of the arguments applied to this function
                        -- back in getScArgs, this is like pointer direction!
@@ -143,4 +146,22 @@ doAdmin (stack,dump,heap,global,stats) = (stack,dump,heap,global,tiStatIncSteps 
 
 -- format results for printing
 showResults :: [TiState] -> [Char]
-showResults = undefined
+showResults states = expDisplay $ expConcat [expConcat $ map showState states, showStats (last states)]
+
+showState :: TiState -> ExpSeq
+showState (stack, dump, heap, globals, stats) = expConcat [showStack stack heap, "\n"]
+
+-- want to show the addresses, mapped to the 
+showStack :: TiStack -> TiHeap -> ExpSeq
+showStack stack = expConcat $ map (showStackNode heap) stack
+
+showStackNode :: TiHeap -> Addr -> ExpSeq
+showStackNode heap a = expConcat [strToExp (show a), strToExp " -> ", 
+                        case hLookup heap a of
+                          Just x  -> showNode x
+                          Nothing -> strToExp "NONE!"]
+
+showNode :: Node -> ExpSeq
+showNode (NNum n) = strToExp $ show n
+showNode (NSComb n _ _) = strToExp $ show n
+showNode (NAp a1 a2)    = -- ???
