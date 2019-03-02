@@ -46,8 +46,8 @@ syntax :: [Token] -> CoreProgram
 syntax = takeFirstParse . pProgram
   where
     takeFirstParse ((prog, []) : others) = prog
-    takeFirstParse (parse      : others) = takeFirstParse others
-    takeFirstParse other                 = error "Syntax error!"
+    takeFirstParse (_ : others) = takeFirstParse others
+    takeFirstParse other = error "Syntax error!"
 
 pProgram :: Parser CoreProgram
 pProgram = pOneOrMoreWithSep pSc (pLit ";")
@@ -96,7 +96,7 @@ pLambda :: Parser CoreExpr
 pLambda = pThen4 comb (pLit "\\")
                       (pOneOrMore pVar)
                       (pLit ".")
-                      pExpr 
+                      pExpr
   where comb _ vars _ expr = ELam vars expr
 
 -- |Our normal production for application is of form (expr aexpr)
@@ -106,7 +106,7 @@ pLambda = pThen4 comb (pLit "\\")
 pApp :: Parser CoreExpr
 pApp = pApply (pOneOrMore pAExpr) apChain
   where
-    apChain [x]    = x                  
+    apChain [x]    = x
     apChain (x:xs) = EAp x $ apChain xs
 
 pAExpr :: Parser CoreExpr
